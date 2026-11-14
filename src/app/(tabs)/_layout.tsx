@@ -1,68 +1,102 @@
+import { tabNavColors, tabStyles } from "@/styles/tabStyles";
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function TabLayout() {
+type IoniconName = React.ComponentProps<typeof Ionicons>["name"];
+
+function TabIcon({
+  name,
+  focused,
+}: {
+  name: IoniconName;
+  focused: boolean;
+}) {
+  return (
+    <View style={tabStyles.iconContainer}>
+      <Ionicons
+        name={name}
+        size={24}
+        color={focused ? tabNavColors.active : tabNavColors.inactive}
+      />
+    </View>
+  );
+}
+
+export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const bottomInset = Math.max(insets.bottom, 8);
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#072deb",
-        tabBarInactiveTintColor: "#94a3b8",
-        tabBarStyle: {
-          height: 60 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 8,
-          paddingTop: 6,
-          backgroundColor: "#ffffff",
-          borderTopWidth: 1,
-          borderTopColor: "#e2e8f0",
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: "600",
-        },
-        headerStyle: {
-          backgroundColor: "#072deb",
-        },
-        headerTintColor: "#ffffff",
-        headerTitleAlign: "center",
+        tabBarActiveTintColor: tabNavColors.active,
+        tabBarInactiveTintColor: tabNavColors.inactive,
+        tabBarStyle: [
+          tabStyles.tabBar,
+          {
+            height: 62 + bottomInset,
+            paddingBottom: bottomInset,
+          },
+        ],
+        tabBarItemStyle: tabStyles.tabBarItem,
+        tabBarLabelStyle: tabStyles.tabBarLabel,
+        tabBarHideOnKeyboard: true,
+        headerStyle: tabStyles.headerStyle,
+        headerTintColor: tabNavColors.headerTint,
+        headerTitleStyle: tabStyles.headerTitleStyle,
+        headerShadowVisible: false,
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: "Beranda",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
+          tabBarLabel: "Home",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
               name={focused ? "home" : "home-outline"}
-              size={22}
-              color={
-                typeof color === "string"
-                  ? color
-                  : focused
-                    ? "#072deb"
-                    : "#94a3b8"
-              }
+              focused={focused}
             />
           ),
         }}
       />
       <Tabs.Screen
-        name="mahasiswa"
+        name="produk"
         options={{
-          title: "Mahasiswa",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "people" : "people-outline"}
-              size={22}
-              color={
-                typeof color === "string"
-                  ? color
-                  : focused
-                    ? "#072deb"
-                    : "#94a3b8"
-              }
+          title: "Katalog Produk",
+          tabBarLabel: "Produk",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              name={focused ? "cube" : "cube-outline"}
+              focused={focused}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="transaksi"
+        options={{
+          title: "Transaksi",
+          tabBarLabel: "Transaksi",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              name={focused ? "cart" : "cart-outline"}
+              focused={focused}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="report"
+        options={{
+          title: "Laporan",
+          tabBarLabel: "Report",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              name={focused ? "stats-chart" : "stats-chart-outline"}
+              focused={focused}
             />
           ),
         }}
@@ -70,37 +104,12 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profil"
         options={{
-          title: "Profil",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "person" : "person-outline"}
-              size={22}
-              color={
-                typeof color === "string"
-                  ? color
-                  : focused
-                    ? "#072deb"
-                    : "#94a3b8"
-              }
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="pengaturan"
-        options={{
-          title: "Pengaturan",
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? "settings" : "settings-outline"}
-              size={22}
-              color={
-                typeof color === "string"
-                  ? color
-                  : focused
-                    ? "#072deb"
-                    : "#94a3b8"
-              }
+          title: "Profil Pengguna",
+          tabBarLabel: "Profil",
+          tabBarIcon: ({ focused }) => (
+            <TabIcon
+              name={focused ? "people" : "people-outline"}
+              focused={focused}
             />
           ),
         }}
