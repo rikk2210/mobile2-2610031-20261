@@ -127,6 +127,15 @@ export const authStyles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 4,
   },
+  primaryButtonDisabled: {
+    opacity: 0.65,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+  },
   primaryButtonText: {
     color: "#FFFFFF",
     fontSize: 15,
