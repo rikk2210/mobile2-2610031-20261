@@ -1,8 +1,8 @@
 import { homeStyles } from "@/styles/homeStyles";
 import { getAuthSession, UserData } from "@/services/authService";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import {
   Alert,
   ScrollView,
@@ -15,18 +15,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function HomeScreen() {
   const [user, setUser] = useState<UserData | null>(null);
 
-  useEffect(() => {
-    getAuthSession().then((session) => {
-      if (session) {
-        setUser(session.user);
-      }
-    }).catch((error: unknown) => {
-      Alert.alert(
-        "Gagal Memuat Profil",
-        error instanceof Error ? error.message : "Terjadi kesalahan.",
-      );
-    });
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      getAuthSession()
+        .then((session) => {
+          if (session) setUser(session.user);
+        })
+        .catch((error: unknown) => {
+          Alert.alert(
+            "Gagal Memuat Profil",
+            error instanceof Error ? error.message : "Terjadi kesalahan.",
+          );
+        });
+    }, []),
+  );
 
   const handleMenuPress = (menuName: string, targetRoute?: string) => {
     if (targetRoute) {

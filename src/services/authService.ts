@@ -1,5 +1,7 @@
 import { API_ENDPOINTS } from "@/config/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { File } from "expo-file-system";
+import { Platform } from "react-native";
 
 const AUTH_TOKEN_KEY = "@novinaldiapp_token";
 const AUTH_USER_KEY = "@novinaldiapp_user";
@@ -35,6 +37,36 @@ export interface RegisterPayload {
   no_hp: string;
   password: string;
   password_confirmation: string;
+}
+
+export interface UpdateProfilePayload {
+  name: string;
+  email: string;
+  no_hp: string;
+}
+
+export interface UpdatePasswordPayload {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface ProfileResponse {
+  success: boolean;
+  message?: string;
+  user: UserData;
+  foto_url?: string;
+}
+
+export interface BasicMessageResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface PhotoUploadAsset {
+  uri: string;
+  fileName?: string | null;
+  mimeType?: string | null;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -139,4 +171,126 @@ export async function getAuthSession(): Promise<AuthSession | null> {
 
 export async function clearAuthSession(): Promise<void> {
   await AsyncStorage.multiRemove([AUTH_TOKEN_KEY, AUTH_USER_KEY]);
+}
+
+export async function fetchProfileApi(
+  token: string,
+): Promise<ProfileResponse> {
+  try {
+    const response = await fetch(API_ENDPOINTS.PROFILE, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return await handleApiResponse<ProfileResponse>(response);
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(
+        "Tidak dapat terhubung ke server Laravel. Periksa koneksi Wi-Fi Anda.",
+      );
+    }
+    throw error;
+  }
+}
+
+export async function updateProfileApi(
+  token: string,
+  payload: UpdateProfilePayload,
+): Promise<ProfileResponse> {
+  try {
+    const response = await fetch(API_ENDPOINTS.UPDATE_PROFILE, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    return await handleApiResponse<ProfileResponse>(response);
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(
+        "Gagal menghubungi server saat menyimpan profil. Cek koneksi Wi-Fi.",
+      );
+    }
+    throw error;
+  }
+}
+
+export async function updatePasswordApi(
+  token: string,
+  payload: UpdatePasswordPayload,
+): Promise<BasicMessageResponse> {
+  try {
+    const response = await fetch(API_ENDPOINTS.UPDATE_PASSWORD, {
+      method: "PUT",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+    return await handleApiResponse<BasicMessageResponse>(response);
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(
+        "Gagal menghubungi server saat mengganti kata sandi. Cek koneksi Wi-Fi.",
+      );
+    }
+    throw error;
+  }
+}
+
+export async function uploadProfilePhotoApi(
+  token: string,
+  asset: PhotoUploadAsset,
+): Promise<ProfileResponse> {
+  try {
+    const formData = new FormData();
+    const fallbackExt =
+      asset.mimeType === "image/png"
+        ? "png"
+        : asset.mimeType === "image/webp"
+          ? "webp"
+          : "jpg";
+    const fileName = asset.fileName || `profile_${Date.now()}.${fallbackExt}`;
+
+    if (Platform.OS === "web") {
+      const blobResponse = await fetch(asset.uri);
+      if (!blobResponse.ok) {
+        throw new Error("Gagal membaca foto yang dipilih.");
+      }
+      const blob = await blobResponse.blob();
+      formData.append("foto", blob, fileName);
+    } else {
+      const file = new File(asset.uri);
+      formData.append("foto", file);
+    }
+
+    const response = await fetch(API_ENDPOINTS.UPDATE_PHOTO, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    return await handleApiResponse<ProfileResponse>(response);
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(
+        "Gagal mengunggah foto ke server. Pastikan server menyala (--host=0.0.0.0).",
+      );
+    }
+    throw error;
+  }
+}
+
+export async function updateStoredUser(user: UserData): Promise<void> {
+  await AsyncStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
 }
